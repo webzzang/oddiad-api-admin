@@ -1,0 +1,370 @@
+{
+  "code": "000",
+  "message": "success",
+  "data": {
+    "seq": null,
+    "name": "시스템 운영 그룹",
+    "usable": true,
+    "memo": "시스템 운영 그룹 권한",
+    "regDate": "2021-10-21 03:48:23",
+    "modDate": "2021-10-21 03:48:23",
+    "roleMenus": [
+      {
+        "groupId": "CST",
+        "groupName": "고객",
+        "subMenus": [
+          {
+            "groupId": "CST",
+            "groupName": "고객",
+            "menuId": "CST001",
+            "menuName": "회원관리",
+            "regAuthority": true,
+            "searchAuthority": true,
+            "modAuthority": true,
+            "delAuthority": true
+          }
+        ]
+      },
+      {
+        "groupId": "ADV",
+        "groupName": "광고",
+        "subMenus": [
+          {
+            "groupId": "ADV",
+            "groupName": "광고",
+            "menuId": "ADV001",
+            "menuName": "광고 심사",
+            "regAuthority": true,
+            "searchAuthority": true,
+            "modAuthority": true,
+            "delAuthority": true
+          },
+          {
+            "groupId": "ADV",
+            "groupName": "광고",
+            "menuId": "ADV002",
+            "menuName": "광고 편성",
+            "regAuthority": true,
+            "searchAuthority": true,
+            "modAuthority": true,
+            "delAuthority": true
+          }
+        ]
+      },
+      {
+        "groupId": "ADP",
+        "groupName": "광고처",
+        "subMenus": [
+          {
+            "groupId": "ADP",
+            "groupName": "광고처",
+            "menuId": "ADP001",
+            "menuName": "오디존",
+            "regAuthority": true,
+            "searchAuthority": true,
+            "modAuthority": true,
+            "delAuthority": true
+          },
+          {
+            "groupId": "ADP",
+            "groupName": "광고처",
+            "menuId": "ADP002",
+            "menuName": "지하철",
+            "regAuthority": true,
+            "searchAuthority": true,
+            "modAuthority": true,
+            "delAuthority": true
+          }
+        ]
+      },
+      {
+        "groupId": "CNT",
+        "groupName": "컨텐츠",
+        "subMenus": [
+          {
+            "groupId": "CNT",
+            "groupName": "컨텐츠",
+            "menuId": "CNT001",
+            "menuName": "라이브스트림",
+            "regAuthority": true,
+            "searchAuthority": true,
+            "modAuthority": true,
+            "delAuthority": true
+          },
+          {
+            "groupId": "CNT",
+            "groupName": "컨텐츠",
+            "menuId": "CNT002",
+            "menuName": "광고판 우측 배너",
+            "regAuthority": true,
+            "searchAuthority": true,
+            "modAuthority": true,
+            "delAuthority": true
+          },
+          {
+            "groupId": "CNT",
+            "groupName": "컨텐츠",
+            "menuId": "CNT003",
+            "menuName": "광고판 하단 배너",
+            "regAuthority": true,
+            "searchAuthority": true,
+            "modAuthority": true,
+            "delAuthority": true
+          },
+          {
+            "groupId": "CNT",
+            "groupName": "컨텐츠",
+            "menuId": "CNT004",
+            "menuName": "사이트 상단 배너",
+            "regAuthority": true,
+            "searchAuthority": true,
+            "modAuthority": true,
+            "delAuthority": true
+          },
+          {
+            "groupId": "CNT",
+            "groupName": "컨텐츠",
+            "menuId": "CNT005",
+            "menuName": "사이트 팝업",
+            "regAuthority": true,
+            "searchAuthority": true,
+            "modAuthority": true,
+            "delAuthority": true
+          }
+        ]
+      },
+      {
+        "groupId": "COS",
+        "groupName": "CS",
+        "subMenus": [
+          {
+            "groupId": "COS",
+            "groupName": "CS",
+            "menuId": "COS001",
+            "menuName": "공지사항",
+            "regAuthority": true,
+            "searchAuthority": true,
+            "modAuthority": true,
+            "delAuthority": true
+          },
+          {
+            "groupId": "COS",
+            "groupName": "CS",
+            "menuId": "COS002",
+            "menuName": "1:1문의",
+            "regAuthority": true,
+            "searchAuthority": true,
+            "modAuthority": true,
+            "delAuthority": true
+          },
+          {
+            "groupId": "COS",
+            "groupName": "CS",
+            "menuId": "COS003",
+            "menuName": "FAQ",
+            "regAuthority": true,
+            "searchAuthority": true,
+            "modAuthority": true,
+            "delAuthority": true
+          }
+        ]
+      },
+      {
+        "groupId": "NTF",
+        "groupName": "알림",
+        "subMenus": [
+          {
+            "groupId": "NTF",
+            "groupName": "알림",
+            "menuId": "NTF001",
+            "menuName": "문자메세지 발송",
+            "regAuthority": true,
+            "searchAuthority": true,
+            "modAuthority": true,
+            "delAuthority": true
+          },
+          {
+            "groupId": "NTF",
+            "groupName": "알림",
+            "menuId": "NTF003",
+            "menuName": "문자메세지 발송 내역",
+            "regAuthority": true,
+            "searchAuthority": true,
+            "modAuthority": true,
+            "delAuthority": true
+          }
+        ]
+      },
+      {
+        "groupId": "DVC",
+        "groupName": "기기",
+        "subMenus": [
+          {
+            "groupId": "DVC",
+            "groupName": "기기",
+            "menuId": "DVC001",
+            "menuName": "기기관리",
+            "regAuthority": true,
+            "searchAuthority": true,
+            "modAuthority": true,
+            "delAuthority": true
+          }
+        ]
+      },
+      {
+        "groupId": "PRD",
+        "groupName": "상품",
+        "subMenus": [
+          {
+            "groupId": "PRD",
+            "groupName": "상품",
+            "menuId": "PRD001",
+            "menuName": "묶음 상품 관리",
+            "regAuthority": true,
+            "searchAuthority": true,
+            "modAuthority": true,
+            "delAuthority": true
+          },
+          {
+            "groupId": "PRD",
+            "groupName": "상품",
+            "menuId": "PRD002",
+            "menuName": "오디존 상품 설정",
+            "regAuthority": true,
+            "searchAuthority": true,
+            "modAuthority": true,
+            "delAuthority": true
+          },
+          {
+            "groupId": "PRD",
+            "groupName": "상품",
+            "menuId": "PRD003",
+            "menuName": "지하철 상품 설정",
+            "regAuthority": true,
+            "searchAuthority": true,
+            "modAuthority": true,
+            "delAuthority": true
+          },
+          {
+            "groupId": "PRD",
+            "groupName": "상품",
+            "menuId": "PRD004",
+            "menuName": "프로모션 관리",
+            "regAuthority": true,
+            "searchAuthority": true,
+            "modAuthority": true,
+            "delAuthority": true
+          }
+        ]
+      },
+      {
+        "groupId": "BLL",
+        "groupName": "매출",
+        "subMenus": [
+          {
+            "groupId": "BLL",
+            "groupName": "매출",
+            "menuId": "BLL002",
+            "menuName": "결제 내역",
+            "regAuthority": true,
+            "searchAuthority": true,
+            "modAuthority": true,
+            "delAuthority": true
+          },
+          {
+            "groupId": "BLL",
+            "groupName": "매출",
+            "menuId": "BLL001",
+            "menuName": "광고 내역",
+            "regAuthority": true,
+            "searchAuthority": true,
+            "modAuthority": true,
+            "delAuthority": true
+          }
+        ]
+      },
+      {
+        "groupId": "MNG",
+        "groupName": "관리자",
+        "subMenus": [
+          {
+            "groupId": "MNG",
+            "groupName": "관리자",
+            "menuId": "MNG001",
+            "menuName": "관리자 계정",
+            "regAuthority": true,
+            "searchAuthority": true,
+            "modAuthority": true,
+            "delAuthority": true
+          },
+          {
+            "groupId": "MNG",
+            "groupName": "관리자",
+            "menuId": "MNG002",
+            "menuName": "관리자 그룹",
+            "regAuthority": true,
+            "searchAuthority": true,
+            "modAuthority": true,
+            "delAuthority": true
+          }
+        ]
+      },
+      {
+        "groupId": "TRM",
+        "groupName": "약관",
+        "subMenus": [
+          {
+            "groupId": "TRM",
+            "groupName": "약관",
+            "menuId": "TRM001",
+            "menuName": "서비스 이용 약관",
+            "regAuthority": true,
+            "searchAuthority": true,
+            "modAuthority": true,
+            "delAuthority": true
+          },
+          {
+            "groupId": "TRM",
+            "groupName": "약관",
+            "menuId": "TRM002",
+            "menuName": "개인정보 처리방침",
+            "regAuthority": true,
+            "searchAuthority": true,
+            "modAuthority": true,
+            "delAuthority": true
+          },
+          {
+            "groupId": "TRM",
+            "groupName": "약관",
+            "menuId": "TRM003",
+            "menuName": "제3자 정보제공 이용동의",
+            "regAuthority": true,
+            "searchAuthority": true,
+            "modAuthority": true,
+            "delAuthority": true
+          },
+          {
+            "groupId": "TRM",
+            "groupName": "약관",
+            "menuId": "TRM004",
+            "menuName": "개인정보 마케팅이용 수집 및 동의",
+            "regAuthority": true,
+            "searchAuthority": true,
+            "modAuthority": true,
+            "delAuthority": true
+          },
+          {
+            "groupId": "TRM",
+            "groupName": "약관",
+            "menuId": "TRM005",
+            "menuName": "광고 신청 약관",
+            "regAuthority": true,
+            "searchAuthority": true,
+            "modAuthority": true,
+            "delAuthority": true
+          }
+        ]
+      }
+    ]
+  }
+}
