@@ -1,0 +1,66 @@
+spring:
+  datasource:
+    hikari:
+      username: oddi
+      password: "oddi1@#"
+      pool-name: oddiad-pool
+      max-lifetime: 12000
+      connection-test-query: select now()
+      minimum-idle: 2
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      jdbc-url: "jdbc:mysql://ls-a2834d111b7d0d1385ca4360b6718cf409b75eff.cvxedmimklz0.ap-northeast-2.rds.amazonaws.com:3306/oddi_ad?characterEncoding=utf8&useSSL=false"
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
+      use-new-id-generator-mappings: false
+    properties:
+      hibernate:
+        temp:
+          use_jdbc_metadata_defaults=false: false
+        show_sql: true
+        format_sql: true
+        use_sql_comments: true
+      globally_quoted_identifiers: true
+logging:
+  config: classpath:logback-file.xml
+  level:
+    org:
+      hibernate:
+        type:
+          descriptor:
+            sql: trace
+# timezone
+timezone: "Asia/Seoul"
+
+sentry:
+  dsn: "https://792727f4f8a148b888c7e5532721379d@o1000756.ingest.sentry.io/5960267"
+  server-name: "[Api] Admin"
+  environment: Local
+  tags:
+    - "api"
+    - "local"
+    - "admin"
+aws:
+  s3:
+    public:
+      bucket: "skd-s3"
+      video-dir: "/oddiad/adv/pre-convert"
+      attachments-dir: "/oddiad/image"
+      banner-dir: "/oddiad/banner"
+      url-host: "https://skd-s3.s3.ap-northeast-2.amazonaws.com"
+      region: ap-northeast-2
+
+device-push:
+  host-url : "http://oddiad-api.video.nextnow.kr"
+
+inicis:
+  mid: "INIpayTest"
+  sign:
+    key: "SU5JTElURV9UUklQTEVERVNfS0VZU1RS"
+  cancel:
+    url: "https://iniapi.inicis.com/api/v1/refund"
+  key: "ItEQKi3rY7uvDS8l"
+  site-url: "http://oddiad-api.user.nextnow.kr"
+  clientIp : "3.34.232.47"

@@ -1,0 +1,85 @@
+spring:
+  datasource:
+    hikari:
+      username: ODDI_APP
+      password: "app21_oddiXX"
+      pool-name: oddiad-pool
+      max-lifetime: 12000
+      connection-test-query: select now()
+      minimum-idle: 2
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      jdbc-url: "jdbc:mysql://rds-an2-oddiad-stg-mysql.ca3pv7invojs.ap-northeast-2.rds.amazonaws.com:3310/oddi?characterEncoding=utf8&useSSL=false"
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
+      use-new-id-generator-mappings: false
+    properties:
+      hibernate:
+        temp:
+          use_jdbc_metadata_defaults=false: false
+        show_sql: true
+        format_sql: true
+        use_sql_comments: true
+      globally_quoted_identifiers: true
+logging:
+  config: classpath:logback-file.xml
+  level:
+    org:
+      hibernate:
+        type:
+          descriptor:
+            sql: trace
+# timezone
+timezone: "Asia/Seoul"
+
+
+sentry:
+  dsn: "https://792727f4f8a148b888c7e5532721379d@o1000756.ingest.sentry.io/5960267"
+  server-name: "[Api] Admin"
+  environment: STG
+  tags:
+    - "api"
+    - "stg"
+    - "admin"
+
+aws:
+  s3:
+    public:
+      bucket: "s3-an2-oddiad-stg"
+      video-dir: "/adv/pre-convert"
+      attachments-dir: "/adv/image"
+      banner-dir: "/banner"
+      url-host: "https://resource.stg.oddiad.co.kr"
+      region: ap-northeast-2
+
+device-push:
+  host-url : "https://device.stg.oddiad.co.kr"
+
+inicis:
+  mid: "exflyer001"
+  sign:
+    key: "dk4xemkrUUpTQWR2dVJKZEZmREMydz09"
+  cancel:
+    url: "https://iniapi.inicis.com/api/v1/refund"
+  key: "ixSrRp0dOFlssnWA"
+  site-url: "https://api.oddiad.co.kr"
+  clientIp : "3.35.10.5"
+
+
+kakaoNotification:
+  apiUrl: "https://gw.surem.com/alimtalk/v2/json"
+  id: "lgtest"
+  pw: "53927249"
+  deptCode: "PN--WT-EL"
+  sendProfileUUID: "@officeservice"
+  sendProfileKey: "9c98413645fbe5023d15e0cb0cdf4a518bfc1018"
+  reSendFromPhoneNum: "01051227638"
+  reSendFromName: "오디관리자"
+  reSendFromId: "admin"
+  templateCode : "ex_test001"
+
+kakao:
+  local-host: "https://dapi.kakao.com/v2/local/search/address.json"
+  rest-key: "d62c6d25963f8c03257cbdce11f000e7"

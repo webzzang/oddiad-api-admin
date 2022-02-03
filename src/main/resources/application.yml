@@ -1,0 +1,52 @@
+server:
+  port: 28080
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true
+      enabled: true
+    context-path: "/admin"
+  shutdown: graceful
+spring:
+  profiles:
+    active: local
+
+# 파일업로드
+  servlet:
+    multipart:
+      max-file-size: 200MB
+      max-request-size: 201MB
+
+jasypt:
+  encryptor:
+    bean: jasyptStringEncryptor
+
+aes:
+  key: ENC()
+  provider: ENC()
+
+kakao:
+  local-host: "https://dapi.kakao.com/v2/local/search/address.json"
+  rest-key: "d62c6d25963f8c03257cbdce11f000e7"
+
+youtube:
+  apiUrl : "https://www.googleapis.com/youtube/v3/playlistItems"
+  apiKey : AIzaSyBlRjtbhSZdPkdJQvJZsWUpk2GUB1UC0FY
+  clientKey : 704700639750-lr3am0viul2mmfm4onfr89ap6acmapnp.apps.googleusercontent.com
+  play-list-id : "UUUpma3sbzBPxQhWnyUKDBZg"
+  part : snippet&fields=nextPageToken,pageInfo,items(id,snippet(position,publishedAt,title,description,thumbnails(high(url)),resourceId(videoId)))&order=date&maxResults=300
+
+
+weather:
+  host-url : http://apis.data.go.kr
+  weather-api-url : /1360000/VilageFcstInfoService_2.0/getVilageFcst
+  air-api-url : /B552584/ArpltnInforInqireSvc/getMsrstnAcctoRltmMesureDnsty
+  serviceKey : XcveY%2Btx%2BcO511xRk53c51h7jr9vmp7hSt%2F72GsC0x%2B7iedoNIIvt167g6AFc2U1x8dicyfHkLc83yJPp0%2B8Gw%3D%3D
+  apiKey : XcveY+tx+cO511xRk53c51h7jr9vmp7hSt/72GsC0x+7iedoNIIvt167g6AFc2U1x8dicyfHkLc83yJPp0+8Gw==
+
+sentry:
+  dsn: "https://459538feb0374898b7955da2ba365e81@o1000756.ingest.sentry.io/5960216"
+  server-name: "[Api] Admin"
+  environment: DEV
+
+

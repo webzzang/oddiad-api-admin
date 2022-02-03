@@ -1,0 +1,58 @@
+spring:
+  datasource:
+    hikari:
+      username: ODDI_APP
+      password: "app21_oddiXX"
+      pool-name: oddi-cp
+      max-lifetime: 12000
+      connection-test-query: select now()
+      minimum-idle: 2
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      jdbc-url: "jdbc:mysql://rds-an2-oddiad-prd-mysql.ca3pv7invojs.ap-northeast-2.rds.amazonaws.com:3310/oddi?characterEncoding=utf8&useSSL=false"
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
+      use-new-id-generator-mappings: false
+    properties:
+      hibernate:
+        temp:
+          use_jdbc_metadata_defaults=false: false
+      globally_quoted_identifiers: true
+logging:
+  config: classpath:logback-op.xml
+
+# timezone
+timezone: "Asia/Seoul"
+
+
+sentry:
+  dsn: "https://792727f4f8a148b888c7e5532721379d@o1000756.ingest.sentry.io/5960267"
+  server-name: "[Api] Admin"
+  environment: OP
+
+
+aws:
+  s3:
+    public:
+      bucket: "s3-an2-oddiad-prod"
+      video-dir: "/adv/pre-convert"
+      attachments-dir: "/adv/image"
+      banner-dir: "/banner"
+      url-host: "https://resource.oddiad.co.kr"
+      region: "ap-northeast-2"
+
+device-push:
+  host-url : "https://device.oddiad.co.kr"
+
+inicis:
+  mid: "exflyer001"
+  sign:
+    key: "dk4xemkrUUpTQWR2dVJKZEZmREMydz09"
+  cancel:
+    url: "https://iniapi.inicis.com/api/v1/refund"
+  key: "ixSrRp0dOFlssnWA"
+  site-url: "https://api.oddiad.co.kr"
+  clientIp : "3.35.10.5"
+
