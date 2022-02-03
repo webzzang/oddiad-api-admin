@@ -1,0 +1,1 @@
+INSERT INTO oddi.role (name, usable, reg_date, reg_id, mod_date, mod_id, memo) VALUES ('시스템 운영 그룹', 1, '2021-10-21 03:48:23', 'INIT', '2021-12-23 16:45:33', 'vU9LVA+kdOJXGSeNtEXTCUI2lAcSGKKloN70FuIbd9E=', '시스템 운영 그룹 권한');

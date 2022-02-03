@@ -1,0 +1,26 @@
+# For a quick start check out our HTTP Requests collection (Tools|HTTP Client|Open HTTP Requests Collection).
+#
+# Following HTTP Request Live Templates are available:
+# * 'gtrp' and 'gtr' create a GET request with or without query parameters;
+# * 'ptr' and 'ptrp' create a POST request with a simple or parameter-like body;
+# * 'mptr' and 'fptr' create a POST request to submit a form with a text or file field (multipart/form-data);
+
+POST https://rest.surem.com/sms/v1/json
+Content-Type: application/json
+
+{
+  "usercode" : "nextnow77",
+  "deptcode" : "00-042-CX",
+  "messages" :
+  [
+    {
+      "message_id":"2000",
+      "to" : "01051227638"
+    }
+  ],
+  "text" : "테스트메세지입니다.",
+  "from" : "01051227638",
+  "reservedTime":""
+}
+
+###

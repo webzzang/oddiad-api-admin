@@ -1,0 +1,1 @@
+INSERT INTO oddi.live_streaming (live_channel_title, live_stream_channel_id, reg_date, reg_id, mod_date, mod_id) VALUES ('오디AD', 'UCUpma3sbzBPxQhWnyUKDBZg', '2021-11-29 03:56:35', 'OGMzZmY3MDEtNDQwMS00YjcyLWEyNWItNjI3NjRmODBhNmZl', null, null);
