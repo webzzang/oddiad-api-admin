@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.exflyer.oddi.admin.api.sales.payment.dao.PaymentHistoryMapper">
+
+	<select id="findPaymentHistory" resultType="com.exflyer.oddi.admin.api.sales.payment.dto.SearchPaymentHistoryResult">
+		select
+			p.seq as payment_seq
+			, p.reg_date
+			, ppl.pg_payment_type
+			, (select name from code where group_code = #{incisPaymentType} and ppl.pg_payment_type = val) as pg_payment_type_name
+			, (select email from member m where m.id = p.member_id) as buyer_email
+			, p.channel_type
+			, (select name from code where code = p.channel_type) channel_type_name
+			, p.product_name
+			, p.adv_name
+			, p.adv_seq
+			, date_format(str_to_date(p.adv_start_date, '%Y%m%d'),'%Y-%m-%d ') as adv_start_date
+			, date_format(str_to_date(p.adv_end_date, '%Y%m%d'),'%Y-%m-%d ') as adv_end_date
+			, format(p.price , 0) as price
+			, (select type  from payment where seq = ppl.payment_seq) last_payment_type
+		from pg_payment_log ppl
+		inner join payment p on ppl.payment_seq = p.seq
+		<where>
+			<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(channelType)">
+				and p.channel_type = #{channelType}
+			</if>
+			<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(buyerEmail)">
+				and ppl.buyer_email like concat('%', #{buyerEmail}, '%')
+			</if>
+			<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(productName)">
+				and p.product_name like concat('%', #{productName}, '%')
+			</if>
+			<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(advName)">
+				and p.adv_name like concat('%', #{advName}, '%')
+			</if>
+			<if test="paymentType != null">
+				<if test='@org.apache.commons.lang3.BooleanUtils@isTrue(paymentType)'>
+					and ppl.pg_payment_type is true
+				</if>
+				<if test='@org.apache.commons.lang3.BooleanUtils@isFalse(paymentType)'>
+					and ppl.pg_payment_type is false
+				</if>
+			</if>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchRegStartDate)'>
+				<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchRegEndDate)'>
+					and p.reg_date >= concat(#{searchRegStartDate}, '000000')
+					and p.reg_date <![CDATA[ <= ]]> concat(#{searchRegEndDate}, '235959')
+				</if>
+			</if>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchAdvStStartDate)'>
+				<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchAdvStEndDate)'>
+					and p.adv_start_date >= #{searchAdvStStartDate}
+					and p.adv_start_date <![CDATA[ <= ]]> #{searchAdvStEndDate}
+				</if>
+			</if>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchAdvEnEndDate)'>
+				<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchAdvEnEndDate)'>
+					and p.adv_end_date >= #{searchAdvEnEndDate}
+					and p.adv_end_date <![CDATA[ <= ]]> #{searchAdvEnEndDate}
+				</if>
+			</if>
+		</where>
+	</select>
+
+	<select id="findPaymentHistoryCount" resultType="java.lang.Integer">
+		select
+		count(1) cnt
+		from pg_payment_log ppl
+		inner join payment p on ppl.payment_seq = p.seq
+		<where>
+			<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(channelType)">
+				and p.channel_type = #{channelType}
+			</if>
+			<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(buyerEmail)">
+				and ppl.buyer_email like concat('%', #{buyerEmail}, '%')
+			</if>
+			<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(productName)">
+				and p.product_name like concat('%', #{productName}, '%')
+			</if>
+			<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(advName)">
+				and p.adv_name like concat('%', #{advName}, '%')
+			</if>
+			<if test="paymentType != null">
+				<if test='@org.apache.commons.lang3.BooleanUtils@isTrue(paymentType)'>
+					and ppl.pg_payment_type is true
+				</if>
+				<if test='@org.apache.commons.lang3.BooleanUtils@isFalse(paymentType)'>
+					and ppl.pg_payment_type is false
+				</if>
+			</if>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchRegStartDate)'>
+				<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchRegEndDate)'>
+					and p.reg_date >= concat(#{searchRegStartDate}, '000000')
+					and p.reg_date <![CDATA[ <= ]]> concat(#{searchRegEndDate}, '235959')
+				</if>
+			</if>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchAdvStStartDate)'>
+				<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchAdvStEndDate)'>
+					and p.adv_start_date >= #{searchAdvStStartDate}
+					and p.adv_start_date <![CDATA[ <= ]]> #{searchAdvStEndDate}
+				</if>
+			</if>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchAdvEnEndDate)'>
+				<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchAdvEnEndDate)'>
+					and p.adv_end_date >= #{searchAdvEnEndDate}
+					and p.adv_end_date <![CDATA[ <= ]]> #{searchAdvEnEndDate}
+				</if>
+			</if>
+		</where>
+	</select>
+
+</mapper>

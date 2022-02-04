@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.exflyer.oddi.admin.api.manager.auth.dao.AdminAuthDao">
+	<select id="isAvailableAct" resultType="java.lang.Boolean">
+		select count(*)
+		from manager m
+		inner join role_menu mm on m.role_seq = mm.role_seq
+		where menu_id = #{menuCode}
+		and m.id = #{id}
+		<if test="createAction">
+			AND mm.reg_authority = true
+		</if>
+		<if test="updateAction">
+			AND mm.mod_authority = true
+		</if>
+		<if test="deleteAction">
+			AND mm.del_authority = true
+		</if>
+		<if test="readAction">
+			AND mm.search_authority = true
+		</if>
+	</select>
+</mapper>

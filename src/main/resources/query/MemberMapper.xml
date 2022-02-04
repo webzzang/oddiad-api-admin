@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.exflyer.oddi.admin.api.member.dao.MemberMapper">
+
+	<select id="findBySearchReq" resultType="com.exflyer.oddi.admin.api.member.dto.MemberListSearchResult">
+		select id,
+					 name,
+					 phone_number,
+					 signup_date,
+					 login_date,
+		       (select name from code where code = m.state_code) as status_code_name,
+					 email
+		from member m
+		<where>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(email)'>
+				and m.email = #{email}
+			</if>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(statusCode)'>
+				and m.state_code = #{statusCode}
+			</if>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(name)'>
+				and m.name like concat('%', #{name} , '%')
+			</if>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(phoneNumber)'>
+				and m.phone_number = #{phoneNumber}
+			</if>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchRegStartDate)'>
+				<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchRegEndDate)'>
+					and m.signup_date >= #{searchRegStartDate}
+					and m.signup_date <![CDATA[ <= ]]> concat(#{searchRegEndDate}, '235959')
+				</if>
+			</if>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchLoginStartDate)'>
+				<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchLoginEndDate)'>
+					and m.login_date >= #{searchLoginStartDate}
+					and m.login_date <![CDATA[ <= ]]> concat(#{searchLoginEndDate}, '235959')
+				</if>
+			</if>
+		</where>
+	</select>
+	<select id="findDetail" resultType="com.exflyer.oddi.admin.api.member.dto.MemberDetailResult">
+		select id,
+					 name,
+					 phone_number,
+					 receive_consent,
+					 signup_date,
+					 mod_date,
+					 m.state_code,
+					 (select name from code where code = m.state_code) as state_code_name,
+					 m.password_error_count,
+					 m.password_mod_date,
+					 m.login_date,
+					 m.memo,
+					 m.email
+		from member m
+    where id = #{id}
+	</select>
+	<select id="findByMemberTerms" resultType="com.exflyer.oddi.admin.api.member.dto.MemberTermsListResult">
+		select
+					 t.title admin_title
+				, (select name from code where code = type) front_title
+				, (case when mt.terms_agree = 1 then '동의'
+							  else '미동의'
+			 	end) terms_name
+				, version
+				, required
+				, (case when required = 1 then '필수'
+					      else '필수아님'
+				end) required_name
+		from terms t inner join member_terms mt
+		on t.seq = mt.terms_seq
+		where t.adv_terms = 0
+		and mt.member_id = #{id}
+		order by type, version desc
+	</select>
+</mapper>

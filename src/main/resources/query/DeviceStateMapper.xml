@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.exflyer.oddi.admin.api.device.dao.DeviceStateMapper">
+
+	<sql id="findSearchDeviceStateCondition">
+		<where>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(deviceType)'>
+				and d.type = #{deviceType}
+			</if>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(deviceLevel)'>
+				and exists (select 1 from code where group_code = #{deviceStateGroupCode} and ds.device_state = val and using_type = #{deviceLevel})
+			</if>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(mallName)'>
+				and p.mall_name like concat('%', #{mallName}, '%')
+			</if>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(deviceName)'>
+				and d.name  like concat('%', #{deviceName}, '%')
+			</if>
+		</where>
+	</sql>
+	<select id="findSearchDeviceStateCount" resultType="java.lang.Integer">
+		select
+			count(1)cnt
+		from partner p
+		inner join partner_device d on p.seq = d.partner_seq
+		inner join device_state ds on ds.device_id = d.device_id
+		<include refid="findSearchDeviceStateCondition"/>
+	</select>
+
+	<select id="findSearchDeviceState" resultType="com.exflyer.oddi.admin.api.device.dto.SearchDeviceStateResult">
+		select
+			p.mall_name
+			, d.device_id
+			, d.name as device_name
+			, (select device_model from device_info where device_id = d.device_id) as device_type
+			, (select name from code where d.type = code) as device_type_name
+			, ds.device_state
+			, (select name from code where group_code = #{deviceStateGroupCode} and ds.device_state = val) as device_state_name
+			, (select (select name from code where c.using_type = code) from code c where c.group_code = #{deviceStateGroupCode} and ds.device_state = c.val) as device_level_name
+			, (select using_type from code c where c.group_code = #{deviceStateGroupCode} and ds.device_state = c.val) as device_level
+			, ds.mod_date
+		from partner p
+		inner join partner_device d on p.seq = d.partner_seq
+		inner join device_state ds on ds.device_id = d.device_id
+		<include refid="findSearchDeviceStateCondition"/>
+		<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(orderBy)'>order by ${orderBy}</if> limit #{start}, #{end}
+	</select>
+
+	<sql id="findSearchDeviceHistoryCondition">
+		<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(deviceState)'>
+			and exists (select 1 from code where group_code = #{deviceStateGroupCode} and dsh.device_state = val and val = #{deviceState})
+		</if>
+		<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(deviceLevel)'>
+			and exists (select 1 from code where group_code = #{deviceStateGroupCode} and dsh.device_state = val and using_type = #{deviceLevel})
+		</if>
+		<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchRegStartDate)'>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchRegEndDate)'>
+				and dsh.reg_date >= concat(#{searchRegStartDate}, '000000')
+				and dsh.reg_date <![CDATA[ <= ]]> concat(#{searchRegEndDate}, '235959')
+			</if>
+		</if>
+	</sql>
+
+	<select id="findSearchDeviceHistoryCount" resultType="java.lang.Integer">
+		select
+		count(1) cnt
+		from device_state_history dsh
+		where dsh.device_id = #{deviceId}
+		<include refid="findSearchDeviceHistoryCondition" />
+	</select>
+
+	<select id="findSearchDeviceHistory" resultType="com.exflyer.oddi.admin.api.device.dto.SearchDeviceHistoryResult">
+		select
+			dsh.device_state
+			, (select name from code where group_code = #{deviceStateGroupCode} and dsh.device_state = val) as device_state_name
+			, (select (select name from code where c.using_type = code) from code c where c.group_code = #{deviceStateGroupCode} and dsh.device_state = c.val) as device_level_name
+			, dsh.reg_date
+		from device_state_history dsh
+		where dsh.device_id = #{deviceId}
+		<include refid="findSearchDeviceHistoryCondition" />
+		<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(orderBy)'>order by ${orderBy}</if> limit #{start}, #{end}
+	</select>
+	<select id="findSearchDeviceInfo" resultType="com.exflyer.oddi.admin.api.device.dto.DeviceStateInfo">
+		select
+			p.mall_name
+			, d.device_id
+			, d.name as device_name
+			, (select name from code where d.type = code) as device_type_name
+		from partner p
+		inner join partner_device d on p.seq = d.partner_seq
+		where device_id = #{deviceId}
+	</select>
+
+</mapper>

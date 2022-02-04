@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.exflyer.oddi.admin.api.notification.send.dao.NotificationMapper">
+
+	<select id="findByGroupTargetSearchReq" resultType="com.exflyer.oddi.admin.api.notification.send.dto.SearchGroupTargetResult">
+		select
+			a.*
+		from
+		(
+		select
+					nt.seq
+					, ntg.name as group_name
+          , ntg.target_code
+					, (select name from code where code = ntg.target_code) target_code_name
+					, case
+						when (target_code = #{oddiPartnerCode} or target_code = #{subwayPartnerCode}) and nt.partner_seq is not null then group_concat(nt.partner_seq)
+						when target_code = #{notificationMemberCode} then group_concat(nt.member_id)
+						when target_code = #{notificationTelCode} then group_concat(nt.phone_number)
+					else nt.name
+					end target_seq
+					, case
+						when (target_code = #{oddiPartnerCode} or target_code = #{subwayPartnerCode}) and nt.partner_seq is not null then group_concat((select mall_name from partner p where p.seq = nt.partner_seq))
+						when target_code = #{notificationMemberCode} then group_concat((select name from member m where m.id = nt.member_id))
+						when target_code = #{notificationTelCode} then group_concat(nt.phone_number)
+					else nt.name
+					end target_name
+		from notification_target_group ntg
+					 inner join notification_target nt on ntg.seq = nt.target_group_seq
+		group by nt.target_group_seq
+		) a
+		<where>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(groupName)'>
+				and group_name like concat('%', #{groupName} , '%')
+			</if>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(targetName)'>
+				and target_name like concat('%', #{targetName} , '%')
+			</if>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(targetCode)'>
+				and target_code = #{targetCode}
+			</if>
+		</where>
+	</select>
+	<select id="findByMemberSearchReq" resultType="com.exflyer.oddi.admin.api.notification.send.dto.MemberSearchResult">
+		select
+			id
+			, name
+			, phone_number
+			, signup_date
+			, (select name from code where code = m.state_code) as status_code_name
+			, email
+		from member m
+		<where>
+			and m.state_code != #{excludeMemberCode}
+			<if test='excludeMemberId != null'>
+				and m.id not in (<foreach collection="excludeMemberId" item="item" separator=",">#{item}</foreach>)
+			</if>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(email)'>
+				and m.email = #{email}
+			</if>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(statusCode)'>
+				and m.state_code = #{statusCode}
+			</if>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(name)'>
+				and m.name like concat('%', #{name} , '%')
+			</if>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(phoneNumber)'>
+				and m.phone_number = #{phoneNumber}
+			</if>
+		</where>
+	</select>
+	<select id="findAdvNowExpoPartner" resultType="com.exflyer.oddi.admin.api.contents.livestream.dto.SearchPartnerResult">
+		select
+		p.seq as partner_seq
+		, p.mall_name
+		, p.channel_type
+		, (select name from code where code = p.channel_type) channel_type_name
+		, p.slot_price
+		, p.reg_date
+		, p.operation
+		, (select name from code where group_code = #{operationGroupCode} and val = p.operation) operation_name
+		from partner p
+		inner join adv_partner a on p.seq = a.partner_seq
+		inner join adv a2 on a.adv_seq = a2.seq
+		<where>
+			and p.channel_type = #{channelType}
+			and a2.audit_code = #{auditApprovalCode}
+			and a2.progress_code = #{progressPaymentCompleteCode}
+			and a2.end_date > #{nowDate}
+			<if test='excludeSeq != null'>
+				and p.seq not in (<foreach collection="excludeSeq" item="item" separator=",">#{item}</foreach>)
+			</if>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(mallName)'>
+				and p.mall_name like concat('%', #{mallName}, '%')
+			</if>
+		</where>
+		group by p.mall_name
+	</select>
+	<select id="findByAdvMemberSearchResult" resultType="com.exflyer.oddi.admin.api.notification.send.dto.MemberSearchResult">
+		select
+			p.seq, m.name, m.phone_number, m.id
+		from partner p
+		inner join adv_partner a on p.seq = a.partner_seq
+		inner join adv a2 on a.adv_seq = a2.seq
+		inner join member m on m.id = a2.member_id
+		where p.seq = #{partnerSeq}
+		group by m.name
+	</select>
+</mapper>

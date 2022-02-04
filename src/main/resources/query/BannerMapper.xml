@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.exflyer.oddi.admin.api.contents.banner.dao.BannerMapper">
+
+	<select id="findSearchSideBanner" resultType="com.exflyer.oddi.admin.api.contents.banner.dto.SearchBannerResult">
+		select
+			seq
+			, name
+			, date_format(str_to_date(expo_start_date, '%Y%m%d'),'%Y-%m-%d ') as expo_start_date
+			, date_format(str_to_date(expo_end_date, '%Y%m%d'),'%Y-%m-%d ') as expo_end_date
+			, reg_date
+			, mod_date
+		from banner
+		<where>
+			and type = #{bannerType}
+			and location_code = #{bannerLocationType}
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(bannerName)'>
+				and name like concat('%', #{bannerName}, '%')
+			</if>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchStExpoStartDate)'>
+				<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchStExpoEndDate)'>
+					and expo_start_date >= #{searchStExpoStartDate}
+					and expo_start_date <![CDATA[ <= ]]> #{searchStExpoEndDate}
+				</if>
+			</if>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchEnExpoStartDate)'>
+				<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchEnExpoEndDate)'>
+					and expo_end_date >= #{searchEnExpoStartDate}
+					and expo_end_date <![CDATA[ <= ]]> #{searchEnExpoEndDate}
+				</if>
+			</if>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchRegStartDate)'>
+				<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchRegEndDate)'>
+					and reg_date >= concat(#{searchRegStartDate}, '000000')
+					and reg_date <![CDATA[ <= ]]> concat(#{searchRegEndDate}, '235959')
+				</if>
+			</if>
+		</where>
+	</select>
+	<select id="findByBannerByFile" resultType="com.exflyer.oddi.admin.api.contents.banner.dto.BannerDetailResult">
+		select
+			b.*
+			, (select f.name from files f where f.seq = b.file_seq) as file_name
+			, (select f.path from files f where f.seq = b.file_seq) as file_path
+		from banner b where seq = #{seq}
+	</select>
+
+	<select id="findBySitePopupExpoDate" resultType="java.lang.Integer">
+		select count(1) from banner
+		where location_code = #{locationCode}
+		and usable = true
+		and (
+		#{expoStartDate} between expo_start_date and expo_end_date
+		or
+		#{expoEndDate} between expo_start_date and expo_end_date
+		or
+		(expo_start_date >= #{expoStartDate} and expo_end_date <![CDATA[ <= ]]> #{expoEndDate})
+		)
+		<if test='seq != null'>
+			and seq <![CDATA[ <> ]]> #{seq}
+		</if>
+	</select>
+
+
+</mapper>

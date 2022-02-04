@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.exflyer.oddi.admin.api.contents.livestream.dao.LiveStreamMapper">
+
+	<select id="findLiveStreamSearchPartner" resultType="com.exflyer.oddi.admin.api.contents.livestream.dto.SearchPartnerResult">
+		select
+			seq as partner_seq
+			, mall_name
+			, channel_type
+			, (select name from code where code = channel_type) channel_type_name
+			, slot_price
+			, reg_date
+			, operation
+			, (select name from code where group_code = #{operationGroupCode} and val = operation) operation_name
+		from partner
+		<where>
+			<if test='excludeSeq != null'>
+				and seq not in (<foreach collection="excludeSeq" item="item" separator=",">#{item}</foreach>)
+			</if>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(channelType)'>
+				and channel_type = #{channelType}
+			</if>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(mallName)'>
+				and mall_name like concat('%', #{mallName}, '%')
+			</if>
+		</where>
+	</select>
+	<select id="findByYoutubeList" resultType="com.exflyer.oddi.admin.api.contents.livestream.dto.LiveStreamingVodList">
+		select
+			y.*
+			, (select mall_name from partner p where p.seq = yp.partner_seq)partner_name
+			, partner_seq
+		from
+		youtube y
+		left outer join youtube_partner yp on y.youtube_id = yp.youtube_id
+		order by youtube_reg_date desc
+	</select>
+
+
+</mapper>

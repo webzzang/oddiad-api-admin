@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.exflyer.oddi.admin.api.external.payment.dao.PaymentMapper">
+
+	<select id="findMemberPaymentInfo" resultType="com.exflyer.oddi.admin.api.external.payment.dto.PaymentCancelRes">
+		select
+			p.seq as payment_seq
+			, a.seq as adv_seq
+			, a.title as adv_title
+			, pal.seq as pg_accredit_log_seq
+			, p.member_id
+			, a.coupon_number
+			, pal.mid
+			, ppl.pay_method
+			, ppl.tid
+			, p.price
+			, ppl.buyer_name
+			, ppl.buyer_email
+			, ppl.buyer_tel
+			, ppl.appl_num
+			, p.reg_date
+			, date_format(str_to_date(a.start_date, '%Y%m%d'),'%Y-%m-%d ') as start_date
+			, date_format(str_to_date(a.end_date, '%Y%m%d'),'%Y-%m-%d ') as end_date
+			, p.price
+			, format(p.price , 0) as price_label
+      from payment p
+     inner join adv a on p.adv_seq = a.seq
+     left join pg_accredit_log pal on pal.payment_seq = p.seq
+     left join pg_payment_log ppl on ppl.payment_seq = p.seq
+		where p.member_id = #{memberId}
+		and p.adv_seq = #{advSeq}
+		and p.type = #{paymentCompleteCode}
+	</select>
+
+	<select id= "findPaymentInfo" resultType="com.exflyer.oddi.admin.api.external.payment.dto.PaymentCancelRes">
+    select
+    			p.seq as payment_seq
+    			, a.seq as adv_seq
+					, a.title as adv_title
+    			, pal.seq as pg_accredit_log_seq
+          , p.member_id, a.coupon_number
+          , pal.mid
+          , ppl.pay_method, ppl.tid, p.price
+          , ppl.buyer_name,ppl.buyer_email, ppl.appl_num
+					, ppl.buyer_tel
+          , p.reg_date
+					, date_format(str_to_date(a.start_date, '%Y%m%d'),'%Y-%m-%d ') as start_date
+					, date_format(str_to_date(a.end_date, '%Y%m%d'),'%Y-%m-%d ') as end_date
+					, p.price
+					, format(p.price , 0) as price_label
+      from payment p
+     inner join adv a on p.adv_seq = a.seq
+     left join pg_accredit_log pal on pal.payment_seq = p.seq
+     left join pg_payment_log ppl on ppl.payment_seq = p.seq
+   where p.seq = #{paymentSeq}
+     and p.adv_seq = #{advSeq}
+     and p.type =  #{paymentCompleteCode}
+  </select>
+
+</mapper>

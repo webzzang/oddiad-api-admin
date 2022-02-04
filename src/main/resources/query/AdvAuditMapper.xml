@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.exflyer.oddi.admin.api.adv.audit.dao.AdvAuditMapper">
+
+	<select id="findBySearchReq" resultType="com.exflyer.oddi.admin.api.adv.audit.dto.AdvAuditListSearchResult">
+    select
+      a.seq
+      , a.title
+      , m.id
+      , m.name
+      , a.channel_type
+      , (select name from code where code = a.channel_type ) as channel_type_name
+      , (select type from adv_file where a.seq = adv_seq order by file_seq limit 0,1) as type
+      , (select name from code where code = (select type from adv_file where a.seq = adv_seq order by file_seq limit 0,1) ) as design_type_name
+      , date_format(str_to_date(a.start_date, '%Y%m%d'),'%Y-%m-%d ') as start_date
+      , date_format(str_to_date(a.end_date, '%Y%m%d'),'%Y-%m-%d ') as end_date
+      , a.reg_date
+      , a.audit_code
+      , (select name from code where code = a.audit_code) as audit_code_name
+			, a.progress_code
+			, (select name from code where code = a.progress_code) as progress_code_name
+			, m.email
+    from adv a
+    inner join member m on a.member_id = m.id
+		where (a.progress_code = #{paymentCompleteCode} or a.progress_code = #{paymentCancelCode})
+		<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(channelType)">
+			and a.channel_type = #{channelType}
+		</if>
+		<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(auditCode)">
+			and a.audit_code = #{auditCode}
+		</if>
+		<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(progressCode)">
+			and a.progress_code = #{progressCode}
+		</if>
+		<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(title)">
+			and a.title like concat('%', #{title}, '%')
+		</if>
+		<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(name)">
+			and m.name like concat('%', #{name}, '%')
+		</if>
+		<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(email)">
+			and m.email = #{email}
+		</if>
+		<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchRegStartDate)'>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchRegEndDate)'>
+				and a.reg_date >= concat(#{searchRegStartDate}, '000000')
+				and a.reg_date <![CDATA[ <= ]]> concat(#{searchRegEndDate}, '235959')
+			</if>
+		</if>
+		<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchStStartDate)'>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchStEndDate)'>
+				and a.start_date >= #{searchStStartDate}
+				and a.start_date <![CDATA[ <= ]]> #{searchStEndDate}
+			</if>
+		</if>
+		<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchEnStartDate)'>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchEnEndDate)'>
+				and a.end_date >= #{searchEnStartDate}
+				and a.end_date <![CDATA[ <= ]]> #{searchEnEndDate}
+			</if>
+		</if>
+	</select>
+	<select id="findDetailAdvBasicInfo" resultType="com.exflyer.oddi.admin.api.adv.audit.dto.AdvAuditResult">
+		select
+			sum(aa.request_slot) tot_request_slot
+			, aa. *
+		from
+		(
+		select
+				a.seq
+				, m.id
+				, m.name
+				, m.phone_number
+				, m.email
+				, a.reg_date
+				, date_format(str_to_date(a.start_date, '%Y%m%d'),'%Y-%m-%d ') as start_date
+        , date_format(str_to_date(a.end_date, '%Y%m%d'),'%Y-%m-%d ') as end_date
+				, a.channel_type
+				, (select name from code where code = a.channel_type ) as channel_type_name
+				, a.audit_code
+				, (select name from code where code = a.audit_code) as audit_code_name
+				, a.progress_code
+				, (select name from code where code = a.progress_code) as progress_code_name
+				, a.approval_date
+				, (select date_format(str_to_date(appl_date, '%Y%m%d'),'%Y-%m-%d ') from payment p inner join pg_payment_log pl on p.seq = pl.payment_seq and a.seq = p.adv_seq where pg_payment_type = '0') as payment_date
+         , (select date_format(str_to_date(appl_date, '%Y%m%d'),'%Y-%m-%d ') from payment p inner join pg_payment_log pl on p.seq = pl.payment_seq and a.seq = p.adv_seq where pg_payment_type = '1') as cancel_date
+				, a.memo
+				, ap.partner_seq
+				, ap.request_slot
+				, format((select p.price from payment p where p.adv_seq = #{seq}), 0) as price
+				, a.title
+				, a.business_type_code
+				, (select name from code where code = a.business_type_code) as business_type_code_name
+				, a.design_request
+				, (select name from code where group_code = 'DST' and val = a.design_request ) as design_request_name
+			  , mc.corporation
+			  , m.member_gbn
+        , (case
+             when mc.corporation is null
+                     then (SELECT name FROM code WHERE group_code = 'BCT' and code = 'BCT003' )
+             when mc.corporation = 0
+                     then (SELECT name FROM code WHERE group_code = 'BCT' and code = 'BCT002' )
+             when mc.corporation = 1
+                     then (SELECT name FROM code WHERE group_code = 'BCT' and code = 'BCT001' )
+				end) as business_gbn
+				, mc.ceo
+				, mc.business_license_file
+				, (select name from files where seq = mc.business_license_file) business_license_file_name
+				, mc.name as company_name
+				, mc.business_license_number
+				, a.rejection_code
+				, (select name from code where code = a.rejection_code ) as rejection_code_name
+				, a.rejection_reason
+		from adv a
+    inner join member m on a.member_id = m.id
+    left outer join member_company mc on mc.seq = a.company_seq
+    inner join adv_partner ap on a.seq = ap.adv_seq
+    where a.seq = #{seq}
+     )aa
+	</select>
+	<select id="findDetailAdvPartnerList" resultType="com.exflyer.oddi.admin.api.adv.audit.dto.AdvAuditPartnerResult">
+		select
+				ap.adv_seq
+				, p.mall_name
+				, ap.partner_seq
+				, ap.request_slot
+				<!--, p.total_slot - (ap.request_slot + (select count(1) from partner_config where type = #{oddiZoneType} and default_adv_file_seq is not null)) as remain_slot-->
+		from adv_partner ap
+					 inner join partner p on ap.partner_seq = p.seq
+		where ap.adv_seq = #{seq}
+	</select>
+	<select id="findDetailAdvFileList" resultType="com.exflyer.oddi.admin.api.adv.audit.dto.AdvAuditFileResult">
+		select
+       af.adv_seq
+				, af.type
+				, (select name from code where code = af.type ) as design_type_name
+				, af.file_seq
+				, f.path
+				, f.name
+				, af.reg_date
+		from adv_file af inner join files f on af.file_seq = f.seq
+		where af.adv_seq = #{seq}
+		order by af.view_order
+	</select>
+	<select id="findDetailRejectionList" resultType="com.exflyer.oddi.admin.api.adv.audit.dto.AdvRejectListResult">
+		select
+       arl.adv_reg_date
+       , (select name from code where code = arl.rejection_code ) as rejection_code_name
+       , arl.rejection_reason
+       , arl.reg_date as rejection_date
+       , (select name from manager where id = arl.reg_id) rejection_name
+		from adv_reject_log arl
+		where arl.adv_seq = #{seq}
+		order by reg_date desc
+	</select>
+</mapper>

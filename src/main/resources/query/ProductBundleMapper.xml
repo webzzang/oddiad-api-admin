@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.exflyer.oddi.admin.api.product.bundle.dao.ProductBundleMapper">
+
+	<select id="findBySearchReq" resultType="com.exflyer.oddi.admin.api.product.bundle.dto.ProductBundleListSearchResult">
+		select
+			pro.*
+		from (
+			select
+				p.seq
+				, p.name
+				, format(p.price , 0) as price
+				, p.operation
+				, (select name from code where group_code = 'OPT' and val = p.operation ) as operation_name
+				, p.reg_date
+				, p.mod_date
+				, pp.partner_seq
+				, p.adv_case_expo
+				, group_concat(pp.partner_seq) partner_seqs
+				, group_concat(pt.mall_name) mall_names
+			from product p
+			inner join product_partner pp on p.seq = pp.product_seq
+			inner join partner pt on pp.partner_seq = pt.seq
+			group by product_seq
+		)pro
+		<where>
+		<if test='operation != null'>
+      <if test='@org.apache.commons.lang3.BooleanUtils@isTrue(operation)'>
+			  and pro.operation = true
+      </if>
+      <if test='@org.apache.commons.lang3.BooleanUtils@isFalse(operation)'>
+        and pro.operation = false
+      </if>
+		</if>
+		<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(name)'>
+			and pro.name like concat('%', #{name}, '%')
+		</if>
+		<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(mallName)'>
+			and pro.mall_names like concat('%', #{mallName}, '%')
+		</if>
+		</where>
+	</select>
+
+	<select id="findDetail" resultType="com.exflyer.oddi.admin.api.product.bundle.dto.ProductBundleResult">
+		select
+				seq
+				, name
+				, price
+				, format(price , 0) as price_label
+				, description
+				, memo
+				, operation
+				, reg_date
+				, adv_case_expo
+				, badge_code
+		from product
+		where seq = #{seq}
+	</select>
+
+	<select id="findDetailPartnerList" resultType="com.exflyer.oddi.admin.api.product.bundle.dto.ProductBundlePartnerResult">
+		select
+				p.seq
+				, pp.partner_seq
+				, pt.mall_name
+		from product p
+		inner join product_partner pp on p.seq = pp.product_seq
+		inner join partner pt on pp.partner_seq = pt.seq
+		where p.seq = #{seq}
+	</select>
+
+	<select id="findDetailFileList" resultType="com.exflyer.oddi.admin.api.product.bundle.dto.ProductBundleFileResult">
+		select
+				pf.product_seq
+				, pf.file_seq
+				, f.path
+				, f.name
+				, pf.reg_date
+				, pf.type
+		from product_file pf inner join files f on pf.file_seq = f.seq
+		where pf.product_seq = #{seq}
+	</select>
+
+</mapper>

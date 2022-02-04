@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.exflyer.oddi.admin.api.adv.make.dao.AdvMakeMapper">
+
+	<select id="findBySearchReq" resultType="com.exflyer.oddi.admin.api.adv.make.dto.AdvMakeListSearchResult">
+		select
+			p.seq
+			, pt.device_id
+			, p.mall_name
+			, p.channel_type
+			, (select name from code where code = p.channel_type) channel_type_name
+			, pt.name as device_name
+			, case when p.channel_type = 'PTT001' then (select count(1) from broadcasting b where b.partner_seq = p.seq and b.device_id = pt.device_id)
+				else 0
+				end adv_count
+			, pt.display_div
+			, (select name from code where code = pt.display_div) display_div_name
+			, pt.reg_date
+		from partner p
+		left outer join partner_device pt on p.seq = pt.partner_seq
+		where exists (select 1 from adv a, adv_partner ap where a.seq = adv_seq and ap.partner_seq = p.seq and audit_code = #{auditApprovalCode} and progress_code = #{progressPaymentCompleteCode})
+			<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(channelType)">
+				and p.channel_type = #{channelType}
+			</if>
+			<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(mallName)">
+				and p.mall_name like concat('%', #{mallName}, '%')
+			</if>
+			<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(deviceName)">
+				and pt.name like concat('%', #{deviceName}, '%')
+			</if>
+	</select>
+	<select id="findDetailAdvBasicInfo" resultType="com.exflyer.oddi.admin.api.adv.make.dto.AdvMakeBasicInfoResult">
+		select
+				 p.seq
+			, p.channel_type
+			, p.mall_name
+			, p.addr
+			, p.detail_addr
+			, pd.name as device_name
+			, pd.device_id
+			, pd.display_div
+			, (select name from code where code = pd.display_div) as display_div_name
+			, pd.side_contents_type
+			, (select name from code where code = pd.side_contents_type) as side_contents_type_name
+			, pd.bottom_contents_type
+			, (select name from code where code = pd.bottom_contents_type) as bottom_contents_type_name
+			, pd.reg_date
+			, a.reg_date as fcm_reg_date
+			, a.success
+			, case when a.success is not null then (case when a.success = 1 then '성공' else '실패' end) end push_result
+			from partner p
+			left outer join partner_device pd on p.seq = pd.partner_seq
+			left outer join (select
+												*
+												from (select ROW_NUMBER() OVER(PARTITION BY device_id ORDER BY seq DESC) as rownum
+																			, device_id
+																			, success
+																			, reg_date
+																			from partner_device_push_history) pdph
+																			where rownum = 1
+															)a on pd.device_id = a.device_id
+		where p.seq = #{seq}
+		<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(deviceId)'>
+			and pd.device_id = #{deviceId}
+		</if>
+	</select>
+	<select id="findDetailNowExpoAdvList" resultType="com.exflyer.oddi.admin.api.adv.make.dto.AdvMakeExpoResult">
+		select
+			'0' as adv_seq
+			, pc.adv_name as title
+			, '0' as broadcasting_seq
+			, pda.expo
+			, '' as start_date
+			, '' as end_date
+			, '0' as view_order
+    from partner_config pc inner join partner_default_adv pda on pda.channel_type = pc.type
+    where pda.partner_seq = #{seq}
+		and pc.type = #{oddiChannelType}
+		union all
+		select
+			a.seq as adv_seq
+			, a.title
+			, b.seq as broadcasting_seq
+    	, b.expo
+			, date_format(str_to_date(a.start_date, '%Y%m%d'),'%Y-%m-%d ') as start_date
+			, date_format(str_to_date(a.end_date, '%Y%m%d'),'%Y-%m-%d ') as end_date
+			, b.ordering as view_order
+		from
+			adv a
+			inner join broadcasting b on a.seq = b.adv_seq
+		where b.partner_seq = #{seq}
+		and b.device_id = #{deviceId}
+		and a.audit_code = #{auditApprovalCode}
+		and a.progress_code = #{progressPaymentCompleteCode}
+		and a.end_date >= #{nowDate}
+		and a.start_date <![CDATA[ <= ]]> #{nowDate}
+		order by view_order, adv_seq
+	</select>
+	<select id="findDetailWaitExpoAdvList" resultType="com.exflyer.oddi.admin.api.adv.make.dto.AdvMakeExpoResult">
+		select
+			a.seq as adv_seq
+			, a.title
+			, date_format(str_to_date(a.start_date, '%Y%m%d'),'%Y-%m-%d ') as start_date
+			, date_format(str_to_date(a.end_date, '%Y%m%d'),'%Y-%m-%d ') as end_date
+		from
+			adv a inner join adv_partner b on a.seq = b.adv_seq
+		where b.partner_seq = #{seq}
+		and a.audit_code = #{auditApprovalCode}
+		and a.progress_code = #{progressPaymentCompleteCode}
+		and a.start_date > #{nowDate}
+		and a.start_date is not null
+		order by adv_seq
+	</select>
+	<select id="findDetailNowExpoAdvFileList" resultType="com.exflyer.oddi.admin.api.adv.make.dto.AdvMakeFilesResult">
+		select
+			'0' as adv_seq
+			, f.seq as file_seq
+			, f.path as file_path
+			, f.name as file_name
+			, pdaf.default_adv_type as type
+			, '0' as view_order
+		from
+			partner_default_adv_files pdaf
+			inner join files f on pdaf.default_adv_file_seq = f.seq
+			where pdaf.channel_type = #{oddiChannelType}
+		union all
+		select
+			a.seq as adv_seq
+			, f.seq as file_seq
+			, f.path as file_path
+			, f.name as file_name
+			, af.type
+			, af.view_order
+		from
+		adv a
+			inner join broadcasting b on a.seq = b.adv_seq
+			inner join adv_file af on a.seq = af.adv_seq
+			inner join files f on af.file_seq = f.seq
+		where b.partner_seq = #{seq}
+		and b.device_id = #{deviceId}
+		and a.audit_code = #{auditApprovalCode}
+		and a.progress_code = #{progressPaymentCompleteCode}
+		and a.end_date >= #{nowDate}
+		and a.start_date <![CDATA[ <= ]]> #{nowDate}
+		order by view_order, adv_seq
+	</select>
+	<select id="findDetailWaitExpoAdvFileList" resultType="com.exflyer.oddi.admin.api.adv.make.dto.AdvMakeFilesResult">
+		select
+				 a.seq as adv_seq
+			, a.title
+			, f.seq as file_seq
+			, f.path as file_path
+			, f.name as file_name
+			, af.type
+			, date_format(str_to_date(a.start_date, '%Y%m%d'),'%Y-%m-%d ') as start_date
+			, date_format(str_to_date(a.end_date, '%Y%m%d'),'%Y-%m-%d ') as end_date
+			, af.view_order
+		from
+			 adv a inner join adv_partner b on a.seq = b.adv_seq
+						 inner join adv_file af on a.seq = af.adv_seq
+						 inner join files f on af.file_seq = f.seq
+			where b.partner_seq = #{seq}
+			and a.audit_code = #{auditApprovalCode}
+			and a.progress_code = #{progressPaymentCompleteCode}
+			and a.start_date > #{nowDate}
+			and f.seq is not null
+			order by view_order, adv_seq
+	</select>
+
+	<select id="findSubwayDetailNowExpoAdvList" resultType="com.exflyer.oddi.admin.api.adv.make.dto.AdvMakeExpoResult">
+		select
+			'0' as adv_seq
+			, pc.adv_name as title
+			, pda.expo
+			, '' as start_date
+			, '' as end_date
+			, '0' as view_order
+    from partner_config pc inner join partner_default_adv pda on pda.channel_type = pc.type
+    where pda.partner_seq = #{seq}
+		and pc.type = #{oddiChannelType}
+		union all
+		select
+			a.seq as adv_seq
+			, a.title
+    	, ap.expo
+			, date_format(str_to_date(a.start_date, '%Y%m%d'),'%Y-%m-%d ') as start_date
+			, date_format(str_to_date(a.end_date, '%Y%m%d'),'%Y-%m-%d ') as end_date
+			, ap.view_order
+		from
+			adv a
+			inner join adv_partner ap on a.seq = ap.adv_seq
+		where ap.partner_seq = #{seq}
+		and a.audit_code = #{auditApprovalCode}
+		and a.progress_code = #{progressPaymentCompleteCode}
+		and a.end_date >= #{nowDate}
+		and a.start_date <![CDATA[ <= ]]> #{nowDate}
+		order by view_order, adv_seq
+	</select>
+
+	<select id="findSubwayDetailNowExpoAdvFileList" resultType="com.exflyer.oddi.admin.api.adv.make.dto.AdvMakeFilesResult">
+		select
+			'0' as adv_seq
+			, f.seq as file_seq
+			, f.path as file_path
+			, f.name as file_name
+			, pdaf.default_adv_type as type
+			, '0' as view_order
+		from
+			partner_default_adv_files pdaf
+			inner join files f on pdaf.default_adv_file_seq = f.seq
+			where pdaf.channel_type = #{oddiChannelType}
+		union all
+		select
+			a.seq as adv_seq
+			, f.seq as file_seq
+			, f.path as file_path
+			, f.name as file_name
+			, af.type
+			, af.view_order
+		from
+		adv a
+			inner join adv_partner ap on a.seq = ap.adv_seq
+			inner join adv_file af on a.seq = af.adv_seq
+			inner join files f on af.file_seq = f.seq
+		where ap.partner_seq = #{seq}
+		and a.audit_code = #{auditApprovalCode}
+		and a.progress_code = #{progressPaymentCompleteCode}
+		and a.end_date >= #{nowDate}
+		and a.start_date <![CDATA[ <= ]]> #{nowDate}
+		order by view_order, adv_seq
+	</select>
+	<select id="findSubwayDetailWaitExpoAdvList" resultType="com.exflyer.oddi.admin.api.adv.make.dto.AdvMakeExpoResult">
+		select
+			a.seq as adv_seq
+			, a.title
+			, date_format(str_to_date(a.start_date, '%Y%m%d'),'%Y-%m-%d ') as start_date
+			, date_format(str_to_date(a.end_date, '%Y%m%d'),'%Y-%m-%d ') as end_date
+		from
+			adv a inner join adv_partner ap on a.seq = ap.adv_seq
+		where ap.partner_seq = #{seq}
+		and a.audit_code = #{auditApprovalCode}
+		and a.progress_code = #{progressPaymentCompleteCode}
+		and a.start_date > #{nowDate}
+		and a.start_date is not null
+		order by adv_seq
+	</select>
+	<select id="findSubwayDetailWaitExpoAdvFileList" resultType="com.exflyer.oddi.admin.api.adv.make.dto.AdvMakeFilesResult">
+		select
+				 a.seq as adv_seq
+			, a.title
+			, f.seq as file_seq
+			, f.path as file_path
+			, f.name as file_name
+			, af.type
+			, date_format(str_to_date(a.start_date, '%Y%m%d'),'%Y-%m-%d ') as start_date
+			, date_format(str_to_date(a.end_date, '%Y%m%d'),'%Y-%m-%d ') as end_date
+			, af.view_order
+		from
+			 adv a inner join adv_partner ap on a.seq = ap.adv_seq
+						 inner join adv_file af on a.seq = af.adv_seq
+						 inner join files f on af.file_seq = f.seq
+			where ap.partner_seq = #{seq}
+			and a.audit_code = #{auditApprovalCode}
+			and a.progress_code = #{progressPaymentCompleteCode}
+			and a.start_date > #{nowDate}
+			and f.seq is not null
+			order by view_order, adv_seq
+	</select>
+</mapper>

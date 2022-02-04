@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.exflyer.oddi.admin.api.notification.history.dao.NotificationHistoryMapper">
+
+	<select id="findByHistorySearchReq" resultType="com.exflyer.oddi.admin.api.notification.history.dto.SearchHistoryResult">
+		select
+			nh.seq
+			, ng.auto
+			, (select name from code where group_code = 'NAT' and ng.auto = val) message_send_type_name
+			, ntg.target_code
+			, (select name from code where code = ntg.target_code) as target_type_name
+			, nh.receive_name
+			, nh.receive_phone_number
+			, nh.alrim_talk
+			, case when nh.alrim_talk = 0 then '문자' else '카카오톡' end send_type_name
+			, nh.success
+			, case when nh.success = 1 then '성공' else '실패' end success_name
+			, nh.sender_id as sender_email
+			, nh.reg_date
+			, nh.contents
+		from notification_history nh
+		inner join notification_group ng on nh.group_seq = ng.seq
+		inner join notification_target_group ntg on ng.target_group_seq = ntg.seq
+		<where>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(targetTypeCode)'>
+				and ntg.target_code = #{targetTypeCode}
+			</if>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(messageSendTypeVal)'>
+				and ng.auto = #{messageSendTypeVal}
+			</if>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchRegStartDate)'>
+				<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchRegEndDate)'>
+					and nh.reg_date >= concat(#{searchRegStartDate}, '000000')
+					and nh.reg_date <![CDATA[ <= ]]> concat(#{searchRegEndDate}, '235959')
+				</if>
+			</if>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(contents)'>
+				and nh.contents like concat('%', #{contents} , '%')
+			</if>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(receiveName)'>
+				and nh.receive_name like concat('%', #{receiveName} , '%')
+			</if>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(receivePhoneNumber)'>
+				and nh.receive_phone_number = #{receivePhoneNumber}
+			</if>
+		</where>
+	</select>
+</mapper>

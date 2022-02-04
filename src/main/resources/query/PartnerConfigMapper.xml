@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.exflyer.oddi.admin.api.product.partnerConfig.dao.PartnerConfigMapper">
+
+	<select id="detail" resultType="com.exflyer.oddi.admin.api.product.partnerConfig.dto.PartnerConfigDetailResult">
+		select
+						pc.slot_count
+					, pc.slot_video_time
+					, pc.design_request
+					, pc.display_div
+					, pc.side_display_service_code
+					, pc.bottom_display_service_code
+					, pc.type
+					, pc.adv_name
+					, pc.oddi_adv_from_start_date
+					, pc.oddi_adv_to_start_date
+					, pc.oddi_adv_max_date
+					, pc.oddi_adv_cancel_date
+					, (select name from code where code = pc.bottom_display_service_code) bottom_display_service_name
+		from partner_config pc
+		where pc.type = #{type}
+	</select>
+
+	<select id="findDefaultAdvFiles" resultType="com.exflyer.oddi.admin.api.product.partnerConfig.dto.PartnerDefaultAdvFileResult">
+		select
+					pdaf.default_adv_file_seq
+					, pdaf.default_adv_type
+					, f.path as file_path
+					, f.name as file_name
+		from partner_default_adv_files pdaf inner join files f on f.seq = pdaf.default_adv_file_seq
+		where pdaf.channel_type = #{type}
+		order by view_order
+	</select>
+
+	<select id="subwayDetail" resultType="com.exflyer.oddi.admin.api.product.partnerConfig.dto.SubwayConfigDetailResult">
+		select
+					slot_count
+				, slot_video_time
+				, design_request
+				, operation_start_time
+				, operation_end_time
+				, subway_adv_last_date
+				, subway_adv_max_start_date
+				, subway_adv_cancel_date
+				, subway_adv_max_date
+				, type as channel_type
+		from partner_config
+		where type = #{type}
+	</select>
+
+</mapper>

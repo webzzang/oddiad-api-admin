@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.exflyer.oddi.admin.api.partner.dao.OddiZonePartnerMapper">
+
+	<select id="findBySearchReq" resultType="com.exflyer.oddi.admin.api.partner.dto.OddiZonePartnerListSearchResult">
+		select
+			p.seq
+			, p.channel_type
+			, p.mall_name
+			, p.owner_name
+			, p.owner_phone_number
+			, (select count(1) from partner_device d where d.partner_seq = p.seq) as device_cnt
+		  , format(p.slot_price , 0) as slot_price
+			, p.reg_date
+			, p.mod_date
+			, p.operation
+			, (select name from code where group_code = 'OPT' and val = p.operation ) as operation_name
+		  , (select group_concat((select name from code where code = ps.subway_code)) from partner_subway ps where ps.partner_seq = p.seq) as subway_name
+		  , (select group_concat(subway_code) from partner_subway ps where ps.partner_seq = p.seq) as subway_code
+		from partner p
+		<where>
+			<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(channelType)">
+				and p.channel_type = #{channelType}
+			</if>
+			<if test="operation != null">
+				and p.operation = #{operation}
+			</if>
+			<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(mallName)">
+				and p.mall_name like concat('%', #{mallName}, '%')
+			</if>
+			<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(ownerName)">
+				and p.owner_name like concat('%', #{ownerName}, '%')
+			</if>
+			<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(ownerPhoneNumber)">
+				and p.owner_phone_number = #{ownerPhoneNumber}
+			</if>
+			<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(subwayCode)">
+				and exists (select 1 from partner_subway ps where ps.partner_seq = p.seq and ps.subway_code = #{subwayCode} )
+			</if>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchRegStartDate)'>
+				<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchRegEndDate)'>
+					and p.reg_date >= concat(#{searchRegStartDate}, '000000')
+					and p.reg_date <![CDATA[ <= ]]> concat(#{searchRegEndDate}, '235959')
+				</if>
+			</if>
+		</where>
+	</select>
+	<select id="findDetailOddiZoneBasicInfo" resultType="com.exflyer.oddi.admin.api.partner.dto.OddiZonePartnerResult">
+		select
+			p.seq
+			, p.channel_type
+			, p.mall_name
+			, p.owner_name
+			, p.owner_phone_number
+			, p.addr
+			, p.old_addr
+			, p.detail_addr
+			, p.zipcode
+			, p.summary
+			, p.description
+			, p.badge_code
+			, p.adv_case_expo
+			, p.operation
+			, p.memo
+			, p.reg_date
+			, p.mod_date
+			, p.total_slot
+			, p.slot_video_time
+			, p.slot_price
+			, format(p.total_slot , 0) as total_slot_label
+			, format(p.slot_video_time , 0) as slot_video_time_label
+			, format(p.slot_price , 0) as slot_price_label
+			, p.operation_week
+			, p.operation_start_time
+			, p.operation_end_time
+			, format(p.day_expo_count , 0) as day_expo_count
+			, p.location
+			, p.display
+			, p.operation_end_tomorrow_gbn
+			, p.map_file_seq
+			, (select path from files where p.map_file_seq = seq) as map_file_path
+			, (select name from files where p.map_file_seq = seq) as map_file_name
+			, p.addr_si
+			, p.addr_gu
+			, p.addr_dong
+		from partner p
+    where p.seq = #{seq}
+	</select>
+	<select id="findDetailOddiZoneTagList" resultType="com.exflyer.oddi.admin.api.partner.dto.OddiZonePartnerTagResult">
+		select
+				 pt.partner_seq
+			, pt.tag_seq
+			, t.tag
+			, pt.view_order
+		from partner_tags pt inner join tags t on pt.tag_seq = t.seq
+		where pt.partner_seq = #{seq}
+		order by view_order
+	</select>
+	<select id="findDetailOddiZoneFileList" resultType="com.exflyer.oddi.admin.api.partner.dto.OddiZonePartnerFileResult">
+		select
+			pi.partner_seq
+			, pi.file_seq
+			, f.path
+			, f.name
+			, pi.reg_date
+			, pi.view_order
+		from partner_image pi  inner join files f on pi.file_seq = f.seq
+		where pi.partner_seq = #{seq}
+		order by view_order
+	</select>
+	<select id="findDetailOddiZoneDeviceList" resultType="com.exflyer.oddi.admin.api.partner.dto.OddiZonePartnerDeviceResult">
+		select
+				 device_id
+			, partner_seq
+			, name
+			, type
+			, reg_date
+			, display_div
+			, side_contents_type
+			, bottom_contents_type
+		from partner_device
+		where partner_seq = #{seq}
+	</select>
+	<select id="findDetailOddiZoneSubwayList" resultType="com.exflyer.oddi.admin.api.partner.dto.OddiZonePartnerSubwayResult">
+		select
+				 ps.subway_seq
+			, ps.partner_seq
+			, ps.subway_code
+			, (select name from code where code = ps.subway_code) as subway_code_name
+		from partner_subway ps
+		where ps.partner_seq = #{seq}
+	</select>
+  <select id="countDeviceInfo" resultType="java.util.Map">
+		select
+       count(1) device_info_cnt
+		, (select count(1) deviceInfoCnt from partner_device where device_id in (<foreach collection="list" item="item" separator=",">#{item.deviceId}</foreach>))partner_device_cnt
+    from device_info
+    where device_id in (<foreach collection="list" item="item" separator=",">#{item.deviceId}</foreach>)
+	</select>
+</mapper>

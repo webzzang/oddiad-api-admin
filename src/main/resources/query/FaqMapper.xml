@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.exflyer.oddi.admin.api.cs.faq.dao.FaqMapper">
+
+	<select id="findBySearchReq" resultType="com.exflyer.oddi.admin.api.cs.faq.dto.FaqListSearchResult">
+		select seq
+					 , category_code
+					 , (select name from code where code = f.category_code) as category_code_name
+					 , title
+					 , expo
+					 , (SELECT name FROM code WHERE group_code = 'SHO' and val = f.expo ) as expo_code_name
+					 , reg_id as regEmail
+					 , reg_date
+		from faq f
+		<where>
+			<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(categoryCode)">
+				and category_code = #{categoryCode}
+			</if>
+			<if test="expo != null">
+				and expo = #{expo}
+			</if>
+			<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(title)">
+				and title like concat('%', #{title}, '%')
+			</if>
+		</where>
+	</select>
+	<select id="findDetail" resultType="com.exflyer.oddi.admin.api.cs.faq.dto.FaqDetailResult">
+		select seq
+					 , category_code
+					 , (select name from code where code = f.category_code) as category_code_name
+					 , title
+					 , expo
+					 , contents
+					 , reg_id
+					 , reg_date
+					 , mod_id
+					 , mod_date
+		from faq f
+    where seq = #{seq}
+	</select>
+</mapper>

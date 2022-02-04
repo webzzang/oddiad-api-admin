@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.exflyer.oddi.admin.api.manager.account.dao.ManagerAccountMapper">
+
+
+  <select id="findBySearchReq"
+    resultType="com.exflyer.oddi.admin.api.manager.account.dto.ManagerAccounts">
+    select m.id,
+           m.name,
+           m.phone_number,
+           rs.name                                      as role_name,
+           (select name from code where code = m.state) as state_code_name,
+           m.reg_date,
+           m.login_date
+    from manager m,
+         role rs
+    where m.role_seq = rs.seq
+    <if test='@org.apache.commons.lang3.StringUtils@isNotBlank(id)'>
+      and m.id = #{id}
+    </if>
+    <if test='@org.apache.commons.lang3.StringUtils@isNotBlank(statusCode)'>
+        and m.state = #{statusCode}
+    </if>
+    <if test='roleSeq != null'>
+      and m.role_seq = #{roleSeq}
+    </if>
+    <if test='@org.apache.commons.lang3.StringUtils@isNotBlank(name)'>
+      and m.name like concat('%', #{name} , '%')
+    </if>
+    <if test='@org.apache.commons.lang3.StringUtils@isNotBlank(phoneNumber)'>
+      and m.phone_number = #{phoneNumber}
+    </if>
+    <if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchRegStartDate)'>
+      <if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchRegEndDate)'>
+        and m.reg_date >= #{searchRegStartDate}
+        and m.reg_date <![CDATA[ <= ]]> concat(#{searchRegEndDate}, '235959')
+      </if>
+    </if>
+    <if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchLoginStartDate)'>
+      <if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchLoginEndDate)'>
+        and m.login_date >= #{searchLoginStartDate}
+        and m.login_date <![CDATA[ <= ]]> concat(#{searchLoginEndDate}, '235959')
+      </if>
+    </if>
+  </select>
+  <select id="findDetailById" resultType="com.exflyer.oddi.admin.api.manager.account.dto.ManagerAccountDetail">
+    select m.id,
+           m.name,
+           m.phone_number,
+           rs.seq                                       as role_seq,
+           rs.name                                      as role_name,
+           m.state                                      as state_code,
+           (select name from code where code = m.state) as state_code_name,
+           m.reg_date,
+           m.login_date,
+           m.memo
+    from manager m,
+         role rs
+    where m.role_seq = rs.seq
+      and m.id = #{id}
+  </select>
+</mapper>

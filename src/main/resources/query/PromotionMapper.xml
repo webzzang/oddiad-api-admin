@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.exflyer.oddi.admin.api.product.promotion.dao.PromotionMapper">
+
+	<select id="findBySearchReq" resultType="com.exflyer.oddi.admin.api.product.promotion.dto.PromotionListSearchResult">
+		select
+			p.seq
+			, p.name
+			, format(p.discount_price , 0) as discount_price
+			, format(count(pc.seq) , 0) as coupon_count
+			, pc.reg_date
+		  , date_format(str_to_date(pc.expired_date, '%Y%m%d'),'%Y-%m-%d ') as expired_date
+		from promotion p
+		left outer join promotion_coupon pc on p.seq = pc.promotion_seq
+		<where>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(type)'>
+				and type = #{type}
+			</if>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(name)'>
+				and p.name like concat('%', #{name}, '%')
+			</if>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchRegStartDate)'>
+				<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchRegEndDate)'>
+					and p.reg_date >= concat(#{searchRegStartDate}, '000000')
+					and p.reg_date <![CDATA[ <= ]]> concat(#{searchRegEndDate}, '235959')
+				</if>
+			</if>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchExpiredStartDate)'>
+				<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchExpiredEndDate)'>
+					and pc.expired_date >= #{searchExpiredStartDate}
+					and pc.expired_date <![CDATA[ <= ]]> #{searchExpiredEndDate}
+				</if>
+			</if>
+		</where>
+		group by p.seq
+	</select>
+
+	<select id="findPromotionBasicInfo" resultType="com.exflyer.oddi.admin.api.product.promotion.dto.PromotionBasicResult">
+		select
+				p.seq
+				, p.name
+				, p.discount_price
+				, p.contents
+				, date_format(str_to_date(pc.expired_date, '%Y%m%d'),'%Y-%m-%d ') as expired_date
+				, count(pc.seq) as coupon_count
+				, (select count(1) from promotion_coupon where promotion_seq = #{seq} and usable = true) as use_coupon_count
+		from promotion p
+					 left outer join promotion_coupon pc on p.seq = pc.promotion_seq
+		where p.seq = #{seq}
+		group by p.seq
+	</select>
+
+	<sql id="findPromotionCouponListCondition">
+		where promotion_seq = #{seq}
+		<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(couponCode)'>
+			and pc.coupon_code like concat('%', #{couponCode}, '%')
+		</if>
+		<if test='usable != null'>
+			<if test='@org.apache.commons.lang3.BooleanUtils@isTrue(usable)'>
+				and pc.usable = true
+			</if>
+			<if test='@org.apache.commons.lang3.BooleanUtils@isFalse(usable)'>
+				and pc.usable = false
+			</if>
+		</if>
+		<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchUsingStartDate)'>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchUsingEndDate)'>
+				and pc.using_date >= concat(#{searchUsingStartDate}, '000000')
+				and pc.using_date <![CDATA[ <= ]]> concat(#{searchUsingEndDate}, '235959')
+			</if>
+		</if>
+		<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(email)'>
+			and exists (select 1 from member where pc.member_id = id and email = #{email})
+		</if>
+	</sql>
+
+	<select id="findPromotionCouponList" resultType="com.exflyer.oddi.admin.api.product.promotion.dto.PromotionCouponList">
+		select
+		*
+		from
+		(
+			select
+			ROW_NUMBER() OVER(ORDER BY seq desc) as rownum
+			, pc.seq
+			, pc.promotion_seq
+			, pc.coupon_code
+			, pc.usable
+			, (select name from code where group_code = #{couponUsableGroupCode} and val = pc.usable) as usable_name
+			, pc.member_id
+			, case when pc.usable = true then (select email from member where pc.member_id = id) else '' end email
+			, pc.using_date
+			, pc.reg_date
+			from promotion_coupon pc
+			<include refid="findPromotionCouponListCondition" />
+			)a
+		 <if test='@org.apache.commons.lang3.StringUtils@isNotBlank(orderBy)'>order by ${orderBy}</if> limit #{start}, #{end}
+	</select>
+
+	<select id="findPromotionCouponCount" resultType="java.lang.Integer">
+		select
+			count(1) as cnt
+		from promotion_coupon pc
+		<include refid="findPromotionCouponListCondition"/>
+	</select>
+
+	<insert id="savePromotionCoupon">
+		insert into promotion_coupon (promotion_seq, coupon_code, reg_date, expired_date)
+		values
+		<foreach collection="lst" item="item" separator=",">
+			(
+			#{item.seq}
+			, #{item.couponCode}
+			, #{item.regDate}
+			, #{item.expiredDate}
+			)
+		</foreach>
+	</insert>
+
+	<insert id="saveCoupon">
+		insert into promotion_coupon (promotion_seq, coupon_code, reg_date, expired_date)
+		values
+			(
+			#{seq}
+			, #{couponCode}
+			, #{regDate}
+			, #{expiredDate}
+			)
+	</insert>
+
+
+</mapper>

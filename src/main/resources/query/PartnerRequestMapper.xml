@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.exflyer.oddi.admin.api.cs.partnerRequest.dao.PartnerRequestMapper">
+
+	<select id="findBySearchReq" resultType="com.exflyer.oddi.admin.api.cs.partnerRequest.dto.PartnerRequestListSearchResult">
+		select
+				seq
+			, name
+			, phone_number
+			, location
+			, business
+			, (SELECT name FROM code WHERE code = pr.business ) as business_name
+			, contents
+			, memo
+			, reg_date
+			, confirm
+			, confirm_id
+		from partner_request pr
+		<where>
+			<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(name)">
+				and pr.name like concat('%', #{name}, '%')
+			</if>
+			<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(phoneNumber)">
+				and pr.phone_number = #{phoneNumber}
+			</if>
+			<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(location)">
+				and pr.location like concat('%', #{location}, '%')
+			</if>
+			<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(business)">
+				and pr.business  = #{business}
+			</if>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchRegStartDate)'>
+				<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchRegEndDate)'>
+					and pr.reg_date >= concat(#{searchRegStartDate}, '000000')
+					and pr.reg_date <![CDATA[ <= ]]> concat(#{searchRegEndDate}, '235959')
+				</if>
+			</if>
+		</where>
+	</select>
+</mapper>

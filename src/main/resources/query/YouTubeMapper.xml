@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.exflyer.oddi.admin.api.external.youtube.dao.YouTubeMapper">
+
+	<select id="findBySearchReq" resultType="java.lang.Integer">
+		select
+					p.mall_name
+					, p.owner_name
+					, p.owner_phone_number
+					, (select count(1) from device d where d.partner_seq = p.seq) as deviceCnt
+					, p.slot_price
+					, p.reg_date
+					, p.mod_date
+					, p.operation
+					, p.subway_line
+		from youtube
+		where 1=1
+	</select>
+	<select id="getByIdYouTubePlayItems" resultType="com.exflyer.oddi.admin.api.external.youtube.dto.YouTubeListResult">
+		select
+			y.*
+			, yp.partner_seq
+			, yp.expo
+		from
+		youtube y
+		left outer join youtube_partner yp on y.youtube_id = yp.youtube_id
+		where yp.partner_seq = #{partnerSeq}
+	</select>
+</mapper>

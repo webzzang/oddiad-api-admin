@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.exflyer.oddi.admin.api.cs.voc.dao.VocMapper">
+
+	<select id="findBySearchReq" resultType="com.exflyer.oddi.admin.api.cs.voc.dto.VocListSearchResult">
+		select
+			v.seq
+			, v.member_id
+			, v.title
+			, v.contents
+			, v.reg_date
+			, v.answer
+			, v.email
+			, case when v.answer is null
+							then (SELECT name FROM code WHERE code = #{answerCode} )
+							else (SELECT name FROM code WHERE code = #{noAnswerCode} )
+				end answer_type
+			, v.answer_reg_date
+			, v.answer_reg_id as answer_reg_email
+			, v.inquiry_type_code
+			, (SELECT name FROM code WHERE code = v.inquiry_type_code ) as inquiry_type_code_name
+		from voc v
+		<where>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(inquiryTypeCode)'>
+				and v.inquiry_type_code = #{inquiryTypeCode}
+			</if>
+			<if test='answerType != null'>
+				<if test='@org.apache.commons.lang3.BooleanUtils@isTrue(answerType)'>
+					and v.answer is not null
+				</if>
+				<if test='@org.apache.commons.lang3.BooleanUtils@isFalse(answerType)'>
+					and v.answer is null
+				</if>
+			</if>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(memberId)'>
+				and v.member_id like concat('%', #{memberId} , '%')
+			</if>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(title)'>
+				and v.title like concat('%', #{title} , '%')
+			</if>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(answerRegId)'>
+				and v.answer_reg_id like concat('%', #{answerRegId} , '%')
+			</if>
+      <if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchRegStartDate)'>
+        <if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchRegEndDate)'>
+          and v.reg_date >= concat(#{searchRegStartDate}, '000000')
+          and v.reg_date <![CDATA[ <= ]]> concat(#{searchRegEndDate}, '235959')
+        </if>
+      </if>
+      <if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchAnswerRegStartDate)'>
+        <if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchAnswerRegEndDate)'>
+          and v.answer_reg_date >= concat(#{searchAnswerRegStartDate}, '000000')
+          and v.answer_reg_date <![CDATA[ <= ]]> concat(#{searchAnswerRegEndDate}, '235959')
+        </if>
+      </if>
+		</where>
+	</select>
+	<select id="findDetail" resultType="com.exflyer.oddi.admin.api.cs.voc.dto.VocDetailResult">
+		select
+				v.seq
+			, m.email
+			, v.name
+			, v.phone_number
+			, v.title
+			, v.contents
+			, v.reg_date
+			, v.answer
+			, case when v.answer is null
+							then (SELECT name FROM code WHERE code = #{answerCode} )
+							else (SELECT name FROM code WHERE code = #{noAnswerCode} )
+				end answer_type
+			, v.answer_reg_date
+			, v.answer_reg_id
+			, v.inquiry_type_code
+			, (SELECT name FROM code WHERE code = v.inquiry_type_code ) as inquiry_type_code_name
+			, f.seq as file_seq
+			, f.name as file_name
+		from voc v
+    left outer join member m on m.id = v.member_id
+		left outer join voc_file vf
+		on v.seq = vf.voc_seq
+		left outer join files f
+		on f.seq = vf.file_seq
+    where v.seq = #{seq}
+	</select>
+</mapper>

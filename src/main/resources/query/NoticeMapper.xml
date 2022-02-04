@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.exflyer.oddi.admin.api.cs.notice.dao.NoticeMapper">
+
+	<select id="findBySearchReq" resultType="com.exflyer.oddi.admin.api.cs.notice.dto.NoticeListSearchResult">
+		select
+			n.seq
+			, n.title
+			, n.contents
+			, n.expo
+			, (SELECT name FROM code WHERE group_code = 'SHO' and val = n.expo ) as expo_code_name
+			, n.top_location
+			, n.reg_date
+			, n.reg_id as reg_email
+		from notice n
+		<where>
+			<if test='expo != null'>
+				and n.expo = #{expo}
+			</if>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(title)'>
+				and n.title like concat('%', #{title} , '%')
+			</if>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(regId)'>
+				and n.reg_id like concat('%', #{regId} , '%')
+			</if>
+			<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchRegStartDate)'>
+				<if test='@org.apache.commons.lang3.StringUtils@isNotBlank(searchRegEndDate)'>
+					and n.reg_date >= concat(#{searchRegStartDate}, '000000')
+					and n.reg_date <![CDATA[ <= ]]> concat(#{searchRegEndDate}, '235959')
+				</if>
+			</if>
+		</where>
+	</select>
+	<select id="findDetail" resultType="com.exflyer.oddi.admin.api.cs.notice.dto.NoticeDetailResult">
+		select
+			n.seq
+			, n.title
+			, n.contents
+			, n.expo
+			, n.top_location
+			, n.reg_date
+			, n.reg_id
+			, n.mod_date
+			, n.mod_id
+			, f.seq as file_seq
+			, f.name as file_name
+			, f.path as file_path
+		from notice n
+			left outer join notice_files nf
+				on n.seq = nf.notice_seq
+			left outer join files f
+				on f.seq = nf.file_seq
+    where n.seq = #{seq}
+	</select>
+</mapper>
